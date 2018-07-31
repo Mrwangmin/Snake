@@ -29,31 +29,39 @@ import javafx.util.Duration;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.beans.EventHandler;
+import java.util.ArrayList;
 
 public class Main extends Application {
     private Snake snake;
     private Food food;
-    private Rectangle throwBody = new Rectangle();
     private Pane pane = new Pane();
-    Rectangle re;
+    private Circle re;
+    private Timeline animation;
+    private ArrayList<Circle> rec = new ArrayList<>();
 
     @Override
     public void start(Stage priamryStage){
-        //qipan(30);
+        qipan(30);
         food = new Food(15,15);
-        re = new Rectangle(food.getX()*30,food.getY()*30,30,30);
+        re = new Circle(food.getX()*30+15,food.getY()*30+15,15);
         re.setFill(Color.BLACK);
-        re.setArcHeight(30);
-        re.setArcWidth(30);
         pane.getChildren().add(re);
         snake = new Snake();
         snake.eat(new Point(0,0));
         pane.setOnKeyPressed(event -> {
             switch (event.getCode()){
-                case UP: snake.setFangxiang(1);break;
-                case DOWN: snake.setFangxiang(2);break;
-                case LEFT: snake.setFangxiang(3);break;
-                case RIGHT: snake.setFangxiang(4);break;
+                case UP: if (snake.getFangxiang()!=2) {
+                    snake.setFangxiang(1);
+                }break;
+                case DOWN: if (snake.getFangxiang()!=1) {
+                    snake.setFangxiang(2);
+                }break;
+                case LEFT: if (snake.getFangxiang()!=4) {
+                    snake.setFangxiang(3);
+                }break;
+                case RIGHT:if (snake.getFangxiang()!=3) {
+                    snake.setFangxiang(4);
+                }break;
             }
         });
         writesnake(snake);
@@ -61,21 +69,42 @@ public class Main extends Application {
         priamryStage.setTitle("贪吃蛇");
         priamryStage.setScene(scene);
         priamryStage.show();
-        Timeline animation = new Timeline(
+        animation = new Timeline(
                 new KeyFrame(Duration.millis(300),event -> {
-                    boolean x = snake.move(food);
-                    if (x){
+                    if (snake.move(food)){
                         writeFood();
                     }
-                    throwBody.setArcHeight(0);
-                    throwBody.setArcWidth(0);
-                    throwBody.setFill(Color.WHITE);
+                    if (snake.gameOver()){
+                        ganmOver();
+                    }
+                    System.out.println(snake.body.getFirst().getX()+" 动画 "+snake.body.getFirst().getY());
                     writesnake(snake);
                 }));
                 animation.setCycleCount(Timeline.INDEFINITE);
         animation.play();
         pane.requestFocus();
     }
+
+    private void ganmOver(){
+        animation.stop();
+        System.out.println(snake.body.getFirst().getX()+" 停止 "+snake.body.getFirst().getY());
+        FlowPane flowPane = new FlowPane();
+        flowPane.setPadding(new Insets(11,12,13,14));
+        flowPane.setVgap(5);
+        flowPane.setHgap(10);
+        Button button = new Button("再来一次");
+        flowPane.getChildren().add(new Label("游戏结束"));
+        flowPane.getChildren().add(button);
+        button.setOnMouseClicked(event -> {
+            snake = new Snake();
+            snake.eat(new Point(0,0));
+            animation.play();
+        });
+
+        pane.getChildren().add(flowPane);
+
+    }
+
     private void writeFood(){
         int x;
         int y;
@@ -86,8 +115,8 @@ public class Main extends Application {
         System.out.println(x+"  "+y);
         food.setX(x);
         food.setY(y);
-        re.setX(x*30);
-        re.setY(y*30);
+        re.setCenterX(x*30+15);
+        re.setCenterY(y*30+15);
     }
 
     private boolean panduan(int x,int y){
@@ -99,22 +128,24 @@ public class Main extends Application {
         }
         return true;
     }
+
+
     private void writesnake(Snake snake){
-        for (int i = 0;i < snake.size()-1;i++){
-            Point point = snake.get(i);
-            Rectangle rectangle = new Rectangle(point.getX()*30,point.getY()*30,30,30);
-            rectangle.setFill(new Color(Math.random(),Math.random(),Math.random(),Math.random()));
-            rectangle.setArcHeight(30);
-            rectangle.setArcWidth(30);
-            pane.getChildren().add(rectangle);
+        for (int i = 0;i < rec.size();i++){
+            Circle circle = rec.get(i);
+            circle.setCenterY(910);
+            circle.setCenterX(910);
         }
-        Point point = snake.body.getLast();
-        throwBody = new Rectangle(point.getX()*30,
-                point.getY()*30,30,30);
-        throwBody.setFill(new Color(Math.random(),Math.random(),Math.random(),Math.random()));
-        throwBody.setArcHeight(30);
-        throwBody.setArcWidth(30);
-        pane.getChildren().add(throwBody);
+
+        for (int i = 0;i < snake.size();i++){
+            Point point = snake.get(i);
+            Circle circle = new Circle(point.getX()*30+15,point.getY()*30+15,15);
+            circle.setFill(new Color(Math.random(),Math.random(),Math.random(),Math.random()));
+            circle.setCenterX(point.getX()*30+15);
+            circle.setCenterY(point.getY()*30+15);
+            rec.add(circle);
+            pane.getChildren().add(circle);
+        }
 
     }
     private void qipan(int x){

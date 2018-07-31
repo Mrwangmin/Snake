@@ -39,17 +39,44 @@ public class Snake{
         Point x = body.getFirst();
         Point x1 = body.getLast();
         body.removeLast();
+
+//        if (body.getFirst().getX()>30||body.getFirst().getY()>30||
+//                body.getFirst().getX()<0||body.getFirst().getY()<0){
+//            return 3;
+//        }
+
         if (x.getY()==food.getY()&&x.getX()==food.getX()){
             body.addLast(x1);
             return true;
         }else{
-
             return false;
         }
+
+
+    }
+
+    boolean gameOver(){
+        if (body.getFirst().getX() >= 30||body.getFirst().getY() >= 30||
+                body.getFirst().getX()<0||body.getFirst().getY()<0){
+            return true;
+        }
+        Point point1 = body.getFirst();
+        for (int i = 1; i < body.size(); i++){
+            Point point2 = body.get(i);
+            if (point1.getX() == point2.getX() && point1.getY() == point2.getY()){
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void setFangxiang(int fangxiang){
         this.fangxiang = fangxiang;
+    }
+
+    public int getFangxiang() {
+        return fangxiang;
     }
 
     void eat(Point point){
